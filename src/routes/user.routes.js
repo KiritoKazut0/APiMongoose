@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as userCtrl from "../controllers/user.controller";
-import { authjwt, verifySignup } from "../middlewares";
+import { authjwt, verifySignup, userExist } from "../middlewares";
 
 const router = Router();
 // [authjwt.verifyToken, authjwt.isAdmin]
@@ -11,7 +11,15 @@ router.post("/", [  authjwt.verifyToken,
                      verifySignup.checkDuplicateEmail,
                     verifySignup.verifyExistedRole], userCtrl.createUser);
 
-router.get("/", [authjwt.verifyToken, authjwt.isAdmin], userCtrl.getUsers);
+                    // [authjwt.verifyToken,
+                    //     authjwt.isAdmin],
+
+router.get("/", userCtrl.getUsers);  
+
+router.delete("/:userId",[authjwt.verifyToken,
+                         authjwt.isAdmin], userCtrl.deleteUser);
+
+router.patch("/:userId", [userExist], userCtrl.changePassword)
 
 
 
