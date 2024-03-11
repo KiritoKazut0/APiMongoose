@@ -46,7 +46,6 @@ export const signUp = async (req, res) => {
 export const signIn = async (req, res) => {
     try {
         const { email, username, password } = req.body;
-
         const userFound = await User.findOne({ email, username });
 
         if (!userFound) return res.status(401).json({ message: "User not found" });

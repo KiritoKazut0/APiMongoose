@@ -4,7 +4,7 @@ export const userExist = async (req, res, next) => {
 
     try {
 
-        if (!req.params.userId || !req.body.password) {
+        if (!req.params.userId || !req.body.passwordActuali || !req.body.passwordNew) {
             return res.status(401).json({message: "Please provide all required data"})
         }
 

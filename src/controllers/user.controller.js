@@ -44,6 +44,9 @@ export const getUsers = async (req, res) => {
 export const deleteUser = async (req, res) => {
     try {
         const { userId } = req.params;
+
+        if (!userId) return res.status(401).json({message: "required id"});
+
         await User.findByIdAndDelete(userId);
         return res.json({ message: "User deleted" })
     } catch (error) {
@@ -55,22 +58,21 @@ export const deleteUser = async (req, res) => {
 export const changePassword = async (req, res) => {
 
     try {
-        
-        const {recevedPassword} = req.body.password;
-        const matchPassword = await User.comparePassword(password, recevedPassword );
-        // if (!);
+        const { passwordActuali, passwordNew } = req.body;
+        const { userId } = req.params;
 
-        const shearchUser = await User.findByIdAndUpdate(req.params.userId, req.body.password, {
-            new: true
-        });
-        if (!shearchUser) return res.status(401).json({ message: "User not found" });
-        
-    
+        const shearchUser = await User.findById(userId);
+        const matchPassword = await User.comparePassword(passwordActuali, shearchUser.password);
 
-        return res.status(201).json({ shearchUser });
+        if (!matchPassword) return res.status(401).json({ message: "credentials invalids" });
+
+        const hashPassword = await User.encryptPassword(passwordNew);
+        const updatePassword = await User.findByIdAndUpdate(userId, { password: hashPassword }, { new: true });
+
+        return res.status(201).json({ updatePassword});
 
     } catch (error) {
-        return res.status(500).json({message: "Error Server "})
+        return res.status(500).json({ message: "Error Server aqui " })
     }
 
 }
