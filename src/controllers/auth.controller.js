@@ -55,7 +55,7 @@ export const signIn = async (req, res) => {
         if (!matchPassword) return res.status(401).json({ message: "Incorrect credentials" });
 
         const token = jwt.sign({ id: userFound._id }, config.SECRET, { expiresIn: 900 });
-        const dateUser = await User.findOne({}, 'roles username email -_id');
+        const dateUser = await User.findOne({}, 'id roles username email');
 
 
         return res.json({  dateUser, token });

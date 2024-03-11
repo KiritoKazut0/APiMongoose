@@ -72,7 +72,7 @@ export const changePassword = async (req, res) => {
         return res.status(201).json({ updatePassword});
 
     } catch (error) {
-        return res.status(500).json({ message: "Error Server aqui " })
+        return res.status(500).json({ message: "Error Server" })
     }
 
 }
