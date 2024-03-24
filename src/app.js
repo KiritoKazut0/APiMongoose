@@ -5,14 +5,16 @@ import { createRoles } from "./libs/initialSetup";
 import ProductsRouter from "./routes/products.routes";
 import authRoutes from "./routes/auth.routes"
 import userRouts from "./routes/user.routes"
-import rateLimit from "express-rate-limit";
+import ordersRoutes from "./routes/orders.routes";
+// import ReportRouts from "./routes/salesReport.routes"
+
 
 const app = express();
 createRoles();
 app.use(morgan('dev')); //registrar informacion sobre las solicitudes hhtp
 
 const corsOptions = {
-    origin: ['http://localhost:4000'],
+    origin: '*',
     methods: 'GET,PUT,PATCH,POST,DELETE', 
     allowedHeaders: 'Content-Type,Authorization', 
     credentials: true 
@@ -32,6 +34,7 @@ app.get ("/", (req, res)=>{
 app.use('/products',ProductsRouter);
 app.use('/api/auth/',authRoutes);
 app.use('/api/users', userRouts);
+app.use('/api/v1/orders/', ordersRoutes)
 
 
 export default app;

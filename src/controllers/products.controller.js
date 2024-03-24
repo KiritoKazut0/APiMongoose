@@ -18,6 +18,7 @@ export const getProducts = async (req, res) => {
     try {
         const ProductsSaved = await Products.find()
         return res.status(200).json(ProductsSaved);
+        
     } catch (error) {
         return res.status(500).json({ message: "Error server" });
     }
@@ -83,3 +84,32 @@ export const deleteProductsById = async (req, res) => {
    }
 }
 
+
+
+export const patchAmountProduct = async (req, res) =>{
+    try {
+        const isValidObjectId = mongoose.Types.ObjectId.isValid;
+        if (!isValidObjectId(req.params.productId)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
+
+        const { amount } = req.body;
+
+        if (!amount) return res.status(404).json({message: "amount is requeried"});
+
+        
+        const product = await Products.findById(req.params.productId);
+        if(!product) {
+            return res.status(404).json({message: "Product not found"});
+        }
+        
+        product.amount += amount;
+        await product.save();
+
+        return res.status(200).json({ message: "Product quantity updated successfully", product });
+
+    } catch (error) {
+   
+        return res.status(500).json({ message: "Server error" });
+    }
+}
