@@ -5,16 +5,19 @@ import {ordersValidate,authjwt, authLimiter} from "../middlewares"
 
 const router = Router();
 
+// [authjwt.verifyToken,
+//     authjwt.isAdmin, 
+//     authLimiter.getsLimit],
 
-router.get('/', [authjwt.verifyToken,
-                 authjwt.isAdmin, 
-                 authLimiter.getsLimit],  ordersCtrl.getOrders);
+// [  authjwt.verifyToken,
+//     authLimiter.amountLimit,
+//     authjwt.isAdmin,
+//     ordersValidate.verifyFields],
+
+router.get('/', ordersCtrl.getOrders);
 
                  
-router.post("/", [  authjwt.verifyToken,
-                    authLimiter.amountLimit,
-                    authjwt.isAdmin,
-                    ordersValidate.verifyFields], ordersCtrl.createOrders);
+router.post("/",  ordersCtrl.createOrders);
 
 
 export default router;
