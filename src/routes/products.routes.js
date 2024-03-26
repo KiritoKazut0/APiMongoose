@@ -10,18 +10,19 @@ router.get("/",  authLimiter.getsLimit,  ProductsCtrl.getProducts );
 router.get("/:productId",authLimiter.getsLimit,  ProductsCtrl.getProductById);
 
 router.post("/",[authjwt.verifyToken,
-                 authLimiter.amountLimit ,
+                 authLimiter.postLimits ,
                  authjwt.isAdmin,
                  duplicateP.validateFields,
                   duplicateP.verifyDuplicate
                 ], ProductsCtrl.createProduct);
 
+
 router.put("/:productId", [authjwt.verifyToken,
-                             authLimiter.amountLimit ,
+                             authLimiter.putLimits ,
                              authjwt.isAdmin, 
                             duplicateP.validateFields],  ProductsCtrl.updateProducById);
                             
-router.delete("/:productId", [authjwt.verifyToken, authLimiter.amountLimit,  authjwt.isAdmin],  ProductsCtrl.deleteProductsById);
+router.delete("/:productId", [authjwt.verifyToken, authLimiter.deleteLimits,  authjwt.isAdmin],  ProductsCtrl.deleteProductsById);
 
 router.patch("/:productId", [authjwt.verifyToken, authLimiter.patchLimit, authjwt.isAdmin ], ProductsCtrl.patchAmountProduct);
 
