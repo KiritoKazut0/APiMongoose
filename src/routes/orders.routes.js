@@ -14,9 +14,8 @@ const router = Router();
 //     authjwt.isAdmin,
 //     ordersValidate.verifyFields],
 
-router.get('/', ordersCtrl.getOrders);
-
-                 
+router.get('/', ordersCtrl.getPendingOrders);
+router.patch('/', ordersCtrl.changeStatusOrders);                 
 router.post("/",  ordersCtrl.createOrders);
 
 
