@@ -5,15 +5,15 @@ export const userExist = async (req, res, next) => {
     try {
 
         if (!req.params.userId || !req.body.passwordActuali || !req.body.passwordNew) {
-            return res.status(401).json({message: "Please provide all required data"})
+            return res.status(400).json({message: "Please provide all required data"})
         }
 
         const userExist = User.findById(req.params.userId);
-        if (!userExist) return res.status().json({ message: "User not found" });
+        if (!userExist) return res.status(404).json({ message: "User not found" });
 
         next();
     } catch (error) {
-        return res.status().json({ message: "Error Server" });
+        return res.status(500).json({ message: "Error Server" });
     }
 
 

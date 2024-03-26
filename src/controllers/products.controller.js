@@ -77,7 +77,7 @@ export const deleteProductsById = async (req, res) => {
     }
 
     await Products.findByIdAndDelete(productId);
-    return res.status(204).json({message: "Product deleted"})
+    return res.status(204).send();
 
    } catch (error) {
     return res.status(500).json({ message: "Error server" });
@@ -95,7 +95,7 @@ export const patchAmountProduct = async (req, res) =>{
 
         const { amount } = req.body;
 
-        if (!amount) return res.status(404).json({message: "amount is requeried"});
+        if (!amount) return res.status(400).json({message: "amount is requeried"});
 
         
         const product = await Products.findById(req.params.productId);

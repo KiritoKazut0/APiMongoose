@@ -48,7 +48,8 @@ export const deleteUser = async (req, res) => {
         if (!userId) return res.status(401).json({message: "required id"});
 
         await User.findByIdAndDelete(userId);
-        return res.json({ message: "User deleted" })
+        return res.status(204).send();
+
     } catch (error) {
         return res.status(400).json({ message: "error deleting user" });
     }
@@ -69,7 +70,7 @@ export const changePassword = async (req, res) => {
         const hashPassword = await User.encryptPassword(passwordNew);
         const updatePassword = await User.findByIdAndUpdate(userId, { password: hashPassword }, { new: true });
 
-        return res.status(201).json({ updatePassword});
+        return res.status(200).json({ updatePassword});
 
     } catch (error) {
         return res.status(500).json({ message: "Error Server" })

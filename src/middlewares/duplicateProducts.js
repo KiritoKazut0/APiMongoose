@@ -24,7 +24,7 @@ export const verifyDuplicate = async (req, res, next) => {
         const isDuplicate = await Products.findOne(req.body);
 
         if (isDuplicate) {
-            return res.json({ message: "The product is a duplicate" });
+            return res.status(409).json({ message: "The product is a duplicate" });
         }
 
         next();

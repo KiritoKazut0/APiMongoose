@@ -6,13 +6,13 @@ export const verifyFields = async (req, res, next) => {
         const { name, email, phone } = req.body.buyerData;
 
         if (!name || !email || !phone) {
-            return res.json({ message: "Error, the buyer's data is incomplete" });
+            return res.status(400).json({ message: "Error, the buyer's data is incomplete" });
         }
 
         const validateProducts = verifyFieldsProducts(req.body.products);
 
         if (Object.keys(validateProducts).length > 0) {
-            return res.json({ message: "Error in products", errors: validateProducts });
+            return res.status(400).json({ message: "Error in products", errors: validateProducts });
         }
         
         next();
