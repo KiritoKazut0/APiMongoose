@@ -19,16 +19,24 @@ export const createOrders = async (req, res) =>{
 
 
 export const changeStatusOrders = async (req, res) => {
-    const { id } = req.body;
+    const { id, status } = req.body;
 
     if (!id || id.length === 0)  return res.status(401).json({ message: "Se requiere el campo 'id' y no puede estar vacío" });
+
+    if (!status) return res.status(401).json({message: "se requiere el campo de status"});
+
+    if (!["Completado", "Cancelado"].includes(status)) {
+        return res.status(400).json({ message: "El estado proporcionado no es válido" });
+    }
+
     
 
     try {
+
         // Actualizar todos los documentos que coincidan con las IDs proporcionadas
         const result = await Orders.updateMany(
             { _id: { $in: id } }, // Filtrar documentos por IDs en el arreglo 'id'
-            { $set: { status: "Completado" } } // Actualizar el campo 'status' a 'Completado'
+            { $set: { status: status } } // Actualizar el campo 'status' a 'Completado'
         );
 
         // Verificar si se actualizaron documentos

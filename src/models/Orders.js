@@ -25,6 +25,7 @@ const ordersSchema = new Schema({
         type: String,
         enum: ["Pendiente", "Completado", "Cancelado"],
         default: "Pendiente"
+    
     },
 
     date: {
