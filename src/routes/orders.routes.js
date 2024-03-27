@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as ordersCtrl from "../controllers/orders.controller"
-import { ordersValidate, authjwt, authLimiter } from "../middlewares"
+import { ordersValidate, authjwt, authLimiter, duplicateP } from "../middlewares"
 
 //usara el patch, // post
 
@@ -17,10 +17,14 @@ router.patch('/',  [authjwt.verifyToken,
                     authjwt.isAdmin,
                     ordersValidate.verifyFields],  ordersCtrl.changeStatusOrders);
 
+
 router.post("/",[authjwt.verifyToken,
                 authLimiter.postLimits,
                 authjwt.isAdmin,
-                ordersValidate.verifyFields], ordersCtrl.createOrders);
+                ordersValidate.verifyFields,
+                duplicateP.verifyIdValid], ordersCtrl.createOrders);
+
+                
 
 
 export default router;

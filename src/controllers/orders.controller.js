@@ -4,12 +4,19 @@ import Products from "../models/Products";
 export const createOrders = async (req, res) =>{
     
     try {
+   
+
         const {buyerData, products} = req.body;
-        const newOrder = new Orders({ buyerData,products });
+        // verificar si la id de los productos es valido
 
-        const ordersSave = await newOrder.save();
 
-       return res.status(201).json({ordersSave});
+
+
+        // const newOrder = new Orders({ buyerData,products });
+
+        // const ordersSave = await newOrder.save();
+
+       return res.status(201).json({value: products[1]._id});
 
     } catch (error) {
       return res.status(500).json({message: "Error the server"});
