@@ -23,7 +23,7 @@ const ordersSchema = new Schema({
 
     status: {
         type: String,
-        enum: ["Pendiente", "Completado", "Cancelado"],
+        enum: ["Pendiente", "En espera", "Completado", "Cancelado"],
         default: "Pendiente"
     
     },

@@ -51,3 +51,24 @@ function verifyFieldsProducts(products) {
 
     return errorsMessage;
 }
+
+
+export const verifyStatusAndIds = async (req, res, next) => {
+    const { status, id } = req.body;
+
+    try {
+        if (!status && !id) {
+            return res.status(400).json({ message: "Both 'id' and 'status' fields are required" });
+        }
+        if (!status) {
+            return res.status(400).json({ message: "Status field is required" });
+        }
+        if (!id || id.length === 0) {
+            return res.status(400).json({ message: "The id is required" });
+        }
+        
+        next(); 
+    } catch (error) {
+        res.status(500).json({ message: "Error during server-side validation" });
+    }
+}

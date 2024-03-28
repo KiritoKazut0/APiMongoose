@@ -1,63 +1,23 @@
 import Orders from "../models/Orders";
 import Products from "../models/Products";
+import mongoose from "mongoose";
 
-export const createOrders = async (req, res) =>{
-    
+export const createOrders = async (req, res) => {
+
     try {
-   
+        const { buyerData, products } = req.body;
 
-        const {buyerData, products} = req.body;
-        // verificar si la id de los productos es valido
+        const newOrder = new Orders({ buyerData, products });
 
+        const ordersSave = await newOrder.save();
 
-
-
-        // const newOrder = new Orders({ buyerData,products });
-
-        // const ordersSave = await newOrder.save();
-
-       return res.status(201).json({value: products[1]._id});
+        return res.status(201).json({ ordersSave });
 
     } catch (error) {
-      return res.status(500).json({message: "Error the server"});
+        return res.status(500).json({ message: "Error the server" });
     }
 
 }
-
-
-export const changeStatusOrders = async (req, res) => {
-    const { id, status } = req.body;
-
-    if (!id || id.length === 0)  return res.status(401).json({ message: "Se requiere el campo 'id' y no puede estar vacío" });
-
-    if (!status) return res.status(401).json({message: "se requiere el campo de status"});
-
-    if (!["Completado", "Cancelado"].includes(status)) {
-        return res.status(400).json({ message: "El estado proporcionado no es válido" });
-    }
-
-    
-
-    try {
-
-        // Actualizar todos los documentos que coincidan con las IDs proporcionadas
-        const result = await Orders.updateMany(
-            { _id: { $in: id } }, // Filtrar documentos por IDs en el arreglo 'id'
-            { $set: { status: status } } // Actualizar el campo 'status' a 'Completado'
-        );
-
-        // Verificar si se actualizaron documentos
-        if (result.n === 0) {
-            return res.json({ message: "No se encontraron pedidos para actualizar" });
-        } else {
-            return res.json({ message: "El estado de los pedidos ha sido actualizado correctamente" });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "Ocurrió un error al intentar actualizar los pedidos", error: error.message });
-    }
-}
-
-
 
 export const getPendingOrders = async (req, res) => {
     try {
@@ -72,7 +32,7 @@ export const getPendingOrders = async (req, res) => {
             .limit(pageSize);
 
         if (pendingOrders.length === 0) {
-          return res.status(404).json({ message: "No hay más resultados disponibles" });
+            return res.status(404).json({ message: "No hay más resultados disponibles" });
         }
 
         // Aquí itera sobre cada pedido
@@ -100,7 +60,7 @@ export const getPendingOrders = async (req, res) => {
                     status: order.status,
                     date: order.date,
                     id: order.id
-                
+
                 };
             } catch (error) {
                 // Captura cualquier error ocurrido durante la obtención de los detalles del pedido
@@ -116,12 +76,96 @@ export const getPendingOrders = async (req, res) => {
 }
 
 
+export const changeStatusOrders = async (req, res) => {
+    try {
+        const { id, status } = req.body;
+        const completedOrders = [];
+        const pendingOrders = [];
 
+        if (status === "Cancelado") {
+            try {
+                const { status, id } = req.body;
+                const result = await Orders.updateMany(
+                    { _id: { $in: id } },
+                    { $set: { status: status } }
+                );
 
+                if (result.n === 0) {
+                    return res.json({ message: "No se encontraron pedidos para actualizar" });
+                } else {
+                    return res.json({ message: "El estado de los pedidos ha sido actualizado correctamente" });
+                }
+            } catch (error) {
+                return res.status(500).json({ message: "Ocurrió un error al intentar actualizar los pedidos", error: error.message });
+            }
+        } else {
+            // Verificar si los pedidos van a estar en espera o completados
+            for (const orderId of id) {
+                try {
+                    const order = await Orders.findById(orderId);
+                    const productsAvailability = await checkProductsAvailability(order.products);
 
+                    if (productsAvailability) {
+                        completedOrders.push(orderId);
+                    } else {
+                        pendingOrders.push(orderId);
+                    }
+                } catch (error) {
+                    console.error("Error procesando pedido:", orderId, error);
+                    return res.status(500).json({ message: "Error al procesar el pedido", error: error.message });
+                }
+            }
 
+            // Actualizar los pedidos en espera y completados
+            try {
+                await Promise.all([
+                    Orders.updateMany({ _id: { $in: completedOrders } }, { $set: { status: "Completado" } }),
+                    Orders.updateMany({ _id: { $in: pendingOrders } }, { $set: { status: "En espera" } })
+                ]);
 
+                // Descuentos de productos
+                await decreaseProductQuantities(completedOrders);
 
+                const response = {
+                    message: "El estado de los pedidos ha sido actualizado correctamente",
+                    completedOrders,
+                    pendingOrders
+                };
+
+                return res.json(response);
+            } catch (error) {
+                console.error("Error actualizando el estado de los pedidos:", error);
+                return res.status(500).json({ message: "Error al actualizar el estado de los pedidos", error: error.message });
+            }
+        }
+    } catch (error) {
+        console.error("Error en el servidor:", error);
+        return res.status(500).json({ message: "Error en el servidor", error: error.message });
+    }
+}
+
+async function checkProductsAvailability(products) {
+    for (const product of products) {
+        const ProductId = product._id.toString();
+ 
+        const availableProduct = await Products.findById(`${ProductId}`);
+        if (!availableProduct || availableProduct.amount < product.quantity) {
+            return false; // No hay suficiente cantidad de este producto
+        }
+    }
+    return true; // Todos los productos están disponibles en la cantidad requerida
+}
+
+async function decreaseProductQuantities(orderIds) {
+    for (const orderId of orderIds) {
+        const order = await Orders.findById(orderId);
+        for (const product of order.products) {
+            const dbProduct = await Products.findById(product._id);
+            dbProduct.amount -= product.quantity;
+            await dbProduct.save();
+        }
+    }
+}
 
 
 

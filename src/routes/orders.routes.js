@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as ordersCtrl from "../controllers/orders.controller"
-import { ordersValidate, authjwt, authLimiter, duplicateP } from "../middlewares"
+import { ordersValidate, authjwt, authLimiter, duplicateP, changeStatus } from "../middlewares"
 
 //usara el patch, // post
 
@@ -8,19 +8,17 @@ import { ordersValidate, authjwt, authLimiter, duplicateP } from "../middlewares
 const router = Router();
 
 router.get('/', [authjwt.verifyToken,
+                authLimiter.getsLimit,
                 authjwt.isAdmin,
-                authLimiter.getsLimit], ordersCtrl.getPendingOrders);
+                changeStatus], ordersCtrl.getPendingOrders);
 
 
-router.patch('/',  [authjwt.verifyToken,
+router.patch('/',  [
                     authLimiter.patchLimit,
-                    authjwt.isAdmin,
-                    ordersValidate.verifyFields],  ordersCtrl.changeStatusOrders);
+                    ordersValidate.verifyStatusAndIds],  ordersCtrl.changeStatusOrders);
 
 
-router.post("/",[authjwt.verifyToken,
-                authLimiter.postLimits,
-                authjwt.isAdmin,
+router.post("/",[authLimiter.postLimits,
                 ordersValidate.verifyFields,
                 duplicateP.verifyIdValid], ordersCtrl.createOrders);
 
