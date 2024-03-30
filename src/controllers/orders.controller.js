@@ -1,6 +1,6 @@
 import Orders from "../models/Orders";
 import Products from "../models/Products";
-import mongoose from "mongoose";
+
 
 export const createOrders = async (req, res) => {
 
@@ -107,6 +107,7 @@ export const changeStatusOrders = async (req, res) => {
 
                     if (productsAvailability) {
                         completedOrders.push(orderId);
+                        generate_statistics(orderId); // por cada compra que se complete, se generara las estadisticas 
                     } else {
                         pendingOrders.push(orderId);
                     }
@@ -168,4 +169,7 @@ async function decreaseProductQuantities(orderIds) {
 }
 
 
+async function generate_statistics (orderId){ // orderId => sera las id de cada pedido para sacar las id de los productos 
+
+}
 
