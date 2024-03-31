@@ -1,6 +1,7 @@
 import Orders from "../models/Orders";
 import Products from "../models/Products";
-
+import { checkProductsAvailability } from "../libs/checkProductsAvailability";
+import { decreaseProductQuantities } from "../libs/decreaseProduct";
 
 export const createOrders = async (req, res) => {
 
@@ -21,74 +22,39 @@ export const createOrders = async (req, res) => {
 
 export const getPendingOrders = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; // Página solicitada, por defecto es la primera
-        const pageSize = parseInt(req.query.pageSize) || 5; // Tamaño de página, por defecto es 5
 
-        const skip = (page - 1) * pageSize; // Cantidad de documentos para saltar
+        const orders = await Orders.find({ status: "Pendiente" }).populate('products.idProduct');
+        if (orders.length === 0) return res.status(200).json({ message: "no hay pedidos pendientes" });
 
-        // Consulta los pedidos pendientes con paginación
-        const pendingOrders = await Orders.find({ status: "Pendiente" })
-            .skip(skip)
-            .limit(pageSize);
-
-        if (pendingOrders.length === 0) {
-            return res.status(404).json({ message: "No hay más resultados disponibles" });
-        }
-
-        // Aquí itera sobre cada pedido
-        const ordersWithDetails = await Promise.all(pendingOrders.map(async (order) => {
-            try {
-                // Aquí se obtienen los detalles de cada pedido
-                const productDetails = await Promise.all(order.products.map(async (product) => {
-                    const productDetail = await Products.findById(product._id);
-                    if (!productDetail) {
-                        throw new Error(`No se encontró ningún producto con el ID ${product._id}`);
-                    }
-                    return {
-                        name: productDetail.name,
-                        price: productDetail.price,
-                        typeProduct: productDetail.typeProduct,
-                        content: productDetail.content,
-                        quantityToOrder: product.quantity,
-                        total_price: product.total_price
-                    };
-                }));
-
-                return {
-                    buyerData: order.buyerData,
-                    products: productDetails,
-                    status: order.status,
-                    date: order.date,
-                    id: order.id
-
-                };
-            } catch (error) {
-                // Captura cualquier error ocurrido durante la obtención de los detalles del pedido
-                return { error: "Error al obtener detalles de productos:" + error.message }; // Devolvemos el error en la respuesta JSON
-            }
-        }));
-
-        // Devolver los detalles de cada pedido con estado pendiente y los detalles de los productos
-        return res.json(ordersWithDetails);
+        return res.status(200).json({ orders });
     } catch (error) {
-        return res.status(500).json({ error: error.message }); // Devuelve el error general en la respuesta JSON
+        return res.status(500).json({ message: "Error server" });
     }
 }
+
+
+export const getWaitOrders = async (req, res) => {
+    try {
+
+        const orders = await Orders.find({ status: "En espera" }).populate('products.idProduct');
+        if (orders.length === 0) return res.status(200).json({ message: "no hay pedidos pendientes" });
+
+        return res.status(200).json({ orders });
+    } catch (error) {
+        return res.status(500).json({ message: "Error server" });
+    }
+}
+
+
 
 
 export const changeStatusOrders = async (req, res) => {
     try {
         const { id, status } = req.body;
-        const completedOrders = [];
-        const pendingOrders = [];
 
         if (status === "Cancelado") {
             try {
-                const { status, id } = req.body;
-                const result = await Orders.updateMany(
-                    { _id: { $in: id } },
-                    { $set: { status: status } }
-                );
+                const result = await Orders.updateMany({ _id: { $in: id } }, { $set: { status: status } });
 
                 if (result.n === 0) {
                     return res.json({ message: "No se encontraron pedidos para actualizar" });
@@ -99,77 +65,25 @@ export const changeStatusOrders = async (req, res) => {
                 return res.status(500).json({ message: "Ocurrió un error al intentar actualizar los pedidos", error: error.message });
             }
         } else {
-            // Verificar si los pedidos van a estar en espera o completados
-            for (const orderId of id) {
-                try {
-                    const order = await Orders.findById(orderId);
-                    const productsAvailability = await checkProductsAvailability(order.products);
+            // Verificar disponibilidad de productos en los pedidos
+            const { completeOrders, waitOrders, errorsSearchId, idProducts } = await checkProductsAvailability(id);
 
-                    if (productsAvailability) {
-                        completedOrders.push(orderId);
-                        generate_statistics(orderId); // por cada compra que se complete, se generara las estadisticas 
-                    } else {
-                        pendingOrders.push(orderId);
-                    }
-                } catch (error) {
-                    console.error("Error procesando pedido:", orderId, error);
-                    return res.status(500).json({ message: "Error al procesar el pedido", error: error.message });
-                }
-            }
+            if (errorsSearchId.length>0) return res.status(400).json({errorsSearchId});
+            //Actualizar estados de los pedidos
+            await Orders.updateMany({ _id: { $in: completeOrders } }, { $set: { status: "Completado" } });
+            await Orders.updateMany({ _id: { $in: waitOrders } }, { $set: { status: "En espera" } });
 
-            // Actualizar los pedidos en espera y completados
-            try {
-                await Promise.all([
-                    Orders.updateMany({ _id: { $in: completedOrders } }, { $set: { status: "Completado" } }),
-                    Orders.updateMany({ _id: { $in: pendingOrders } }, { $set: { status: "En espera" } })
-                ]);
+            // descontar los productos adquiridos: 
+            await decreaseProductQuantities(idProducts);
 
-                // Descuentos de productos
-                await decreaseProductQuantities(completedOrders);
-
-                const response = {
-                    message: "El estado de los pedidos ha sido actualizado correctamente",
-                    completedOrders,
-                    pendingOrders
-                };
-
-                return res.json(response);
-            } catch (error) {
-                console.error("Error actualizando el estado de los pedidos:", error);
-                return res.status(500).json({ message: "Error al actualizar el estado de los pedidos", error: error.message });
-            }
+            return res.status(201).json({ completeOrders, waitOrders});
         }
+
+
+
     } catch (error) {
-        console.error("Error en el servidor:", error);
         return res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 }
 
-async function checkProductsAvailability(products) {
-    for (const product of products) {
-        const ProductId = product._id.toString();
- 
-        const availableProduct = await Products.findById(`${ProductId}`);
-        if (!availableProduct || availableProduct.amount < product.quantity) {
-            return false; // No hay suficiente cantidad de este producto
-        }
-    }
-    return true; // Todos los productos están disponibles en la cantidad requerida
-}
-
-async function decreaseProductQuantities(orderIds) {
-    for (const orderId of orderIds) {
-        const order = await Orders.findById(orderId);
-        for (const product of order.products) {
-            const dbProduct = await Products.findById(product._id);
-            dbProduct.amount -= product.quantity;
-            await dbProduct.save();
-        }
-    }
-}
-
-
-async function generate_statistics (orderId){ // orderId => sera las id de cada pedido para sacar las id de los productos 
-
-}
 

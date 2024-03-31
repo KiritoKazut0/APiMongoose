@@ -11,7 +11,7 @@ const ordersSchema = new Schema({
 
     products: [
         {
-            _id: {
+            idProduct: {
                 type: Schema.Types.ObjectId,
                 ref: "Product",
                 required: true

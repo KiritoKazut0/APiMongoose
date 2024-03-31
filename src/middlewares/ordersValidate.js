@@ -23,7 +23,7 @@ export const verifyFields = async (req, res, next) => {
 };
 
 function verifyFieldsProducts(products) {
-    const requiredFields = ['_id', 'quantity', 'total_price'];
+    const requiredFields = ['idProduct', 'quantity', 'total_price'];
     const errorsMessage = {};
 
     if (!products || !products.length) {
@@ -38,10 +38,10 @@ function verifyFieldsProducts(products) {
                 productErrors[field] = `The ${field} is required`;
             }
         }
-
+        console.log(products[i].idProduct);
         // Validar la existencia y el formato del ID del producto utilizando isValidObjectId
-        if (!mongoose.Types.ObjectId.isValid(products[i]._id)) {
-            productErrors['_id'] = 'Invalid product ID';
+        if (!mongoose.Types.ObjectId.isValid(`${products[i].idProduct}`)) {
+            productErrors['idProduct'] = 'Invalid product ID';
         }
 
         if (Object.keys(productErrors).length > 0) {

@@ -8,8 +8,8 @@ const SalesSchema = new Schema({
         required: true
     },
 
-    amountSales: { type: Number, required: true },
-    totalSold: { type: Number, required: true },
+    amount: { type: Number, required: true },
+    total: { type: Number, required: true },
 
     date: {
         type: String,
