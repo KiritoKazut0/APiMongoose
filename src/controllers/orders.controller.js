@@ -1,5 +1,5 @@
 import Orders from "../models/Orders";
-import Products from "../models/Products";
+
 import { checkProductsAvailability } from "../libs/checkProductsAvailability";
 import { decreaseProductQuantities } from "../libs/decreaseProduct";
 

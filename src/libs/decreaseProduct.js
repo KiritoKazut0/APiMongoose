@@ -1,5 +1,5 @@
 import Products from "../models/Products";
-import Sales from "../models/Sales";
+import Sales from "../models/sales";
 
 export async function decreaseProductQuantities(idProducts) {
     try {

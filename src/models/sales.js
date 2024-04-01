@@ -12,9 +12,9 @@ const SalesSchema = new Schema({
     total: { type: Number, required: true },
 
     date: {
-        type: String,
+        type: Date,
         required: true,
-        default: () => new Date().toISOString().split('T')[0]
+        default: Date.now
     }
 
 

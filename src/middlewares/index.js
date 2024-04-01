@@ -4,6 +4,7 @@ import * as authLimiter from "./authLimiter"
 import { userExist } from "./verifyPassword"
 import * as duplicateP from "./duplicateProducts"
 import * as ordersValidate from "./ordersValidate"
+import * as verifyFieldsSales from "./verifyFieldSales"
 
 export {
     authjwt,
@@ -12,5 +13,6 @@ export {
     duplicateP,
     authLimiter,
     ordersValidate,
+    verifyFieldsSales
  
 }
