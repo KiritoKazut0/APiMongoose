@@ -22,7 +22,7 @@ export const postImage = async (req, res)=>{
 
 
 const uploadFile = async (fileObject) => {
-  const folderId = process.env.IdFolder;
+  const folderId = `${process.env.IdFolder}`;
   const bufferStream = new  stream.PassThrough();
   bufferStream.end(fileObject.file.data);
   const drive = await getDriveService();
