@@ -10,7 +10,7 @@ router.get("/", [authjwt.verifyToken,
                ], userCtrl.getUsers);  
 
 
-router.post("/", [ authjwt.isAdmin,
+router.post("/", [ authjwt.verifyToken,
                     authLimiter.postLimits,
                      verifySignup.validateFields,
                      verifySignup.checkDuplicateEmail,

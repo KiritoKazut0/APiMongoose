@@ -6,7 +6,7 @@ import * as authCtrl from "../controllers/auth.controller"
 import { verifySignup, authLimiter } from "../middlewares";
 
 
-router.post("/signin", [verifySignup.validateFields, authLimiter.Login], authCtrl.signIn);
+router.post("/signin", [verifySignup.validateFieldsLogin, authLimiter.Login], authCtrl.signIn);
 
 router.post("/signup", [ verifySignup.validateFields,    
                         authLimiter.amountLimit,
