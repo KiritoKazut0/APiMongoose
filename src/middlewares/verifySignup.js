@@ -8,11 +8,17 @@ export const checkDuplicateEmail = async (req, res, next) => {
 
 }
 
+export const checkDuplicatePhone = async (req, res, next) =>{
+    const user = await User.findOne({telefono: req.body.telefono});
+    if (user) return res.json({message: "the phone duplicate"});
+    next();
+}
+
 export const validateFields = (req, res, next) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, telefono, img } = req.body;
     const errorsMessage = {};
 
-    if (!username && !email && !password) {
+    if (!username && !email && !password &&  !img && !telefono) {
         return res.status(400).json({
             message: "Please provide all required data"
         });
@@ -21,7 +27,8 @@ export const validateFields = (req, res, next) => {
     if (!username) errorsMessage.username = "Username is required";
     if (!password) errorsMessage.password = "Password is required";
     if (!email) errorsMessage.email = "Email is required";
-
+    if (!telefono) errorsMessage.telefono = "The number phone is required";
+    if (!img) errorsMessage.img = "The img is required";
 
     if (Object.keys(errorsMessage).length > 0) {
         return res.status(400).json(errorsMessage);

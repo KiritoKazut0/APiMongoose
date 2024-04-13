@@ -6,14 +6,15 @@ const router = Router();
 
 router.get("/", [authjwt.verifyToken,
                  authLimiter.getsLimit,
-                authjwt.isAdmin], userCtrl.getUsers);  // solo es para obtener los socios
+                 authjwt.isAdmin,
+               ], userCtrl.getUsers);  
 
 
-router.post("/", [  authjwt.verifyToken,
+router.post("/", [ 
                     authLimiter.postLimits,
-                     authjwt.isAdmin, 
                      verifySignup.validateFields,
                      verifySignup.checkDuplicateEmail,
+                     verifySignup.checkDuplicatePhone,
                     verifySignup.verifyExistedRole], userCtrl.createUser);
 
 

@@ -10,7 +10,8 @@ router.post("/signin", [verifySignup.validateFields, authLimiter.Login], authCtr
 
 router.post("/signup", [ verifySignup.validateFields,    
                         authLimiter.amountLimit,
-                        verifySignup.checkDuplicateEmail,
+                        verifySignup.checkDuplicateEmail, 
+                        verifySignup.checkDuplicatePhone,
                         verifySignup.verifyExistedRole,
                       ], authCtrl.signUp);
 

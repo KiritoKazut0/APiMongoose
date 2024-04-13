@@ -20,23 +20,12 @@ export const createOrders = async (req, res) => {
 
 }
 
-export const getPendingOrders = async (req, res) => {
+
+
+export const getOrders = async (req, res) => {
     try {
 
-        const orders = await Orders.find({ status: "Pendiente" }).populate('products.idProduct');
-        if (orders.length === 0) return res.status(200).json({ message: "no hay pedidos pendientes" });
-
-        return res.status(200).json({ orders });
-    } catch (error) {
-        return res.status(500).json({ message: "Error server" });
-    }
-}
-
-
-export const getWaitOrders = async (req, res) => {
-    try {
-
-        const orders = await Orders.find({ status: "En espera" }).populate('products.idProduct');
+        const orders = await Orders.find({ status:{$in:["En espera", "Pendiente"]} }).populate('products.idProduct');
         if (orders.length === 0) return res.status(200).json({ message: "no hay pedidos pendientes" });
 
         return res.status(200).json({ orders });

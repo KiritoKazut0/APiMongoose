@@ -6,33 +6,28 @@ import Role from "../models/Role";
 
 export const signUp = async (req, res) => {
     try {
-        const { username, email, password, roles } = req.body;
+        const { username, email, password, roles, telefono, img } = req.body;
 
         const newUser = new User({
             username,
             email,
-            password: await User.encryptPassword(password),
-            
+            telefono,
+            img,
+            password: await User.encryptPassword(password), 
         })
 
         if (roles) {
             const foundRoles = await Role.find({ name: { $in: roles } })
-            newUser.roles =  foundRoles.map(role => role._id);
-            console.log(newUser);
-            
+            newUser.roles =  foundRoles.map(role => role._id);         
 
         } else {
             const role = await Role.findOne({ name: "Socio" });
             newUser.roles = [role._id]
         }
 
-        const savedUser = await newUser.save();
+        await newUser.save();
 
-        const token = await jwt.sign({ id: savedUser._id }, config.SECRET, {
-            expiresIn: 900
-        })
-
-        return res.status(200).json({ token })
+        return res.status(201).json({ message: "add correct users" })
 
     } catch (error) {
 
@@ -43,7 +38,7 @@ export const signUp = async (req, res) => {
 }
 
 
-export const signIn = async (req, res) => {
+export const signIn = async (req, res) => { 
     try {
         const { email, username, password } = req.body;
         const userFound = await User.findOne({ email, username });
@@ -55,10 +50,14 @@ export const signIn = async (req, res) => {
         if (!matchPassword) return res.status(401).json({ message: "Incorrect credentials" });
 
         const token = jwt.sign({ id: userFound._id }, config.SECRET, { expiresIn: 900 });
-        const dateUser = await User.findOne({}, 'id roles username email');
+        const userWithRoles = await User.findOne({}).populate('roles')
 
+        const dateUser = {
+            username: userWithRoles.username,
+            roles: userWithRoles.roles.map(role => role.name)
+        };
 
-        return res.json({  dateUser, token });
+        return res.json({dateUser, token });
 
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });

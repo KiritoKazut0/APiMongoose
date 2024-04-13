@@ -16,6 +16,16 @@ import bcryptjs from "bcryptjs"
         type: String,
         required: true
     },
+
+    telefono: {
+        type: String,
+        required: true
+    },
+
+    img:{
+        type: String,
+        required: true
+    },
    
     roles: [{
         ref:"Role",

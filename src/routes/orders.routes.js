@@ -7,11 +7,8 @@ const router = Router();
 
  router.get('/', [authjwt.verifyToken,
                  authLimiter.getsLimit,
-                 authjwt.isAdmin], ordersCtrl.getPendingOrders);
-
- router.get('/', [authjwt.verifyToken,
-                 authLimiter.getsLimit,
-                 authjwt.isAdmin], ordersCtrl.getWaitOrders);
+                 authjwt.isAdmin
+                 ], ordersCtrl.getOrders);
                
 
   router.patch('/',  [authjwt.verifyToken,

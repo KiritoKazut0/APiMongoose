@@ -3,21 +3,24 @@ import Role from "../models/Role";
 
 export const createUser = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, telefono, img } = req.body;
 
         const newUser = new User(
             {
                 username,
                 email,
+                telefono,
+                img,
                 password: await User.encryptPassword(password)
+              
             });
 
         const role = await Role.findOne({ name: "Socio" });
 
         newUser.roles = [role._id]
-        const userSave = await newUser.save();
+        await newUser.save();
 
-        return res.status(201).json(userSave);
+        return res.status(201).json({message: 'user add'});
 
     } catch (error) {
         return res.status(500).json({ message: "error server " });
@@ -30,15 +33,22 @@ export const getUsers = async (req, res) => {
     try {
         const ROLE = await Role.find({ name: "Socio" });
 
-        const users = await User.find({ roles: ROLE });
-        console.log(users)
+        const usersWithRoles = await User.find({ roles: ROLE }).populate('roles');
 
-        return res.status(200).json(users);
+        const dateUsers = usersWithRoles.map(user => ({
+            username: user.username,
+            email: user.email,
+            telefono: user.telefono,
+            roles: user.roles.map(role => role.name)
+        }));
+
+        return res.status(200).json(dateUsers);
 
     } catch (error) {
-        return res.status(500).json({ message: "error al buscar al los socios" })
+        return res.status(500).json({ message: "Error al buscar a los socios" });
     }
 }
+
 
 
 export const deleteUser = async (req, res) => {
