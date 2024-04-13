@@ -10,12 +10,13 @@ router.get("/", [authjwt.verifyToken,
                ], userCtrl.getUsers);  
 
 
-router.post("/", [ 
+router.post("/", [ authjwt.isAdmin,
                     authLimiter.postLimits,
                      verifySignup.validateFields,
                      verifySignup.checkDuplicateEmail,
                      verifySignup.checkDuplicatePhone,
-                    verifySignup.verifyExistedRole], userCtrl.createUser);
+                    verifySignup.verifyExistedRole,
+                    authjwt.isAdmin], userCtrl.createUser);
 
 
 
