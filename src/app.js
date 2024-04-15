@@ -16,11 +16,11 @@ createRoles();
 app.use(morgan('dev')); //registrar informacion sobre las solicitudes hhtp
 
 const corsOptions = {
-    origin: '*',
-    methods: 'GET,PUT,PATCH,POST,DELETE', 
-    allowedHeaders: 'Content-Type,Authorization', 
-    credentials: true 
-  };
+  origin: '*',
+  methods: 'GET,PUT,PATCH,POST,DELETE', 
+  allowedHeaders: 'Content-Type,Authorization,x-access-token', 
+  credentials: true 
+};
 
 
 app.use(cors(corsOptions));

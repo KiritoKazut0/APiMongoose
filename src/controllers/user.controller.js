@@ -39,6 +39,8 @@ export const getUsers = async (req, res) => {
             username: user.username,
             email: user.email,
             telefono: user.telefono,
+            img: user.img,
+            id: user.id,
             roles: user.roles.map(role => role.name)
         }));
 
